@@ -49,7 +49,7 @@ def callBinfile(fname):
         IQarray.append(fid1[:,i+1] + cm.sqrt(-1)*fid1[:,i+3])
     IQarray = np.array(IQarray)
     IQarray = np.reshape(IQarray,(numRX,numADCSamples,frameNumber,totalChirpRepeat))
-    IQarray = IQarray[:,:,14:,:]
+    # IQarray = IQarray[:,:,14:,:]
     # print(cut_frame_number[count])
     # IQarray = np.swapaxes(IQarray, 0,2)
     # print(IQarray.shape)
@@ -75,8 +75,8 @@ def animate(i):
     # frame = Comfft[0,i,:,:]
     # axIm.set_array(abs(frame))
 
-    # frame2 = Vefft[0,i,:,:]
-    frame2 = Vefft[3,i,:20,22:42]
+    frame2 = Vefft[0,i,:,:]
+    # frame2 = Vefft[3,i,:20,22:42]
     axDop.set_array(frame2)
 
     
@@ -119,8 +119,8 @@ def runGraphInitial():
         imshow range-doppler(velocity)
     # '''
     axDop = fig.add_subplot(224)
-    # veFrame = Vefft[0,0,:,:]
-    veFrame = Vefft[3,0,:20,22:42]
+    veFrame = Vefft[0,0,:,:]
+    # veFrame = Vefft[3,0,:20,22:42]
     axDop = plt.imshow(veFrame, aspect= 'auto', origin='lower' , cmap='jet'
     , extent=[-veFrame.shape[1]/2., veFrame.shape[1]/2., 0, veFrame.shape[0]-1], interpolation = 'catrom')
     plt.colorbar(axDop)
@@ -260,7 +260,7 @@ def main():
     # print("shape of comfft ", Comfft.shape)
     # plt.plot(20*np.log10(abs(Comfft[0,0,3,:])/32767))
     # plt.show()
-        # Comfft = movingAvg_OneD()
+        Comfft = movingAvg_OneD()
         Vefft = fftVelocity()
         Vefft_real = Vefft.real
         Vefft_imag = Vefft.imag
@@ -285,10 +285,10 @@ def main():
         # Comfft = 20*np.log10(Comfft/32768)
     # print("shape before save =", veFrame.shape)
         # runGraphInitial()
-    # Vefft_list = np.array(Vefft_list)
-    # print(Vefft_list.shape)
+    Vefft_list = np.array(Vefft_list)
+    print(Vefft_list.shape)
     # Vefft_list = Vefft_list[:,:,:20,22:42]
-    # np.save("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_real_imag.npy",Vefft_list) 
+    np.save("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_moving_real_imag.npy",Vefft_list) 
     '''
     save file to npy
     '''

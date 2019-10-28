@@ -17,7 +17,7 @@ def pre_process():
     deletedCom = np.concatenate((deleted1,deleted2))
     
 
-    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_real_imag.npy")
+    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_moving_real_imag.npy")
     print(radar_data.shape)
     radar_data = np.swapaxes(np.swapaxes(radar_data, 1,2),2,3)
     # radar_data = radar_data[:,:,0,:]
@@ -76,8 +76,8 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
     
     training_epoch = 10000
     batch_size = 18736
-    log_dir = './summary_raw_data/summary_cnn_6_layers_complex_6/2dcov2'
-    model_path = './saved_model/model_cnn_6_layers_complex_6/4plot.ckpt'
+    log_dir = './summary_moving_data/summary_cnn_6_layers_complex_moving_1/2dcov2'
+    model_path = './saved_model/model_cnn_6_layers_complex_moving_1/4plot.ckpt'
     # model_load = './saved_model/model_cnn_6_layers_complex_1_2d/4plot.ckpt'
 
     batch_test_size = 2430

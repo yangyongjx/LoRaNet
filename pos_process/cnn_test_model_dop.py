@@ -17,7 +17,7 @@ def pre_process():
     deletedCom = np.concatenate((deleted1,deleted2))
 
 
-    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_real_imag.npy")
+    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_moving_real_imag.npy")
     # print(radar_data.shape)
     radar_data = np.swapaxes(np.swapaxes(radar_data, 1,2),2,3)
     # radar_data = radar_data[:,:,0,:]
@@ -82,7 +82,7 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
     training_epoch = 10000
     batch_size = 1500
 
-    model_load = 'C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/model/saved_model/model_cnn_6_layers_complex_6/4plot.ckpt'
+    model_load = 'C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/model/saved_model/model_cnn_6_layers_complex_moving_1/4plot.ckpt'
 
     batch_test_size = 20000
     batch_test_len = 0
@@ -146,13 +146,13 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
         test_acc, prediction = sess.run([loss, denseOut], feed_dict = {x_p: radar_train_data[batch_test_len:(batch_test_len+batch_test_size)], y_p: dis_train_label[batch_test_len:(batch_test_len+batch_test_size)], training_phase: False})
         print("test acc", test_acc)
         print("Prediction", prediction.shape)
-        np.save('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_6(train)', prediction)
+        np.save('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_moving_1(train)', prediction)
 
   
 def main():
     radar_train_data, radar_test_data, dis_train_label, dis_test_label = pre_process()
     run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label)
-    np.save('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/test_data/dis_test_data_complex_exp_6(train)', dis_train_label)
+    np.save('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/test_data/dis_test_data_complex_exp_moving_1(train)', dis_train_label)
 
 if __name__ == "__main__":
     main()
