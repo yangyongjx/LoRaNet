@@ -23,56 +23,42 @@ def pre_process():
     # radar_data = radar_data[:,:,0,:]
     radar_data = np.delete(radar_data, deletedCom, axis =0)
 
-    # radar_test_data = np.concatenate((radar_data[:486], radar_data[6317:6803], radar_data[12636:13122], radar_data[16038:16524], radar_data[18468:18954]))
-    radar_test_data = np.concatenate((radar_data[6317:6803], radar_data[12636:13122], radar_data[16038:16524], radar_data[18468:18954]))
-    # radar_train_data = np.concatenate((radar_data[486:6317], radar_data[6803:12636], radar_data[13122:16038], radar_data[16524:18468], radar_data[18954:]))
-    radar_train_data = np.concatenate((radar_data[:6317], radar_data[6803:12636], radar_data[13122:16038], radar_data[16524:18468], radar_data[18954:]))
+    radar_test_data = np.concatenate((radar_data[:486], radar_data[6317:6803], radar_data[12636:13122], radar_data[16038:16524], radar_data[18468:18954]))
+    # radar_test_data = np.concatenate((radar_data[6317:6803], radar_data[12636:13122], radar_data[16038:16524], radar_data[18468:18954]))
+    radar_train_data = np.concatenate((radar_data[486:6317], radar_data[6803:12636], radar_data[13122:16038], radar_data[16524:18468], radar_data[18954:]))
+    # radar_train_data = np.concatenate((radar_data[:6317], radar_data[6803:12636], radar_data[13122:16038], radar_data[16524:18468], radar_data[18954:]))
     print(radar_test_data.shape, radar_train_data.shape)
 
     dis_label = np.concatenate((label1, label2))
     dis_label = dis_label[:,0,:]
     # print(dis_label.shape)
 
-    # dis_test_label = np.concatenate((dis_label[:486], dis_label[6317:6803], dis_label[12636:13122], dis_label[16038:16524], dis_label[18468:18954]))
-    dis_test_label = np.concatenate((dis_label[6317:6803], dis_label[12636:13122], dis_label[16038:16524], dis_label[18468:18954]))
-    # dis_train_label = np.concatenate((dis_label[486:6317], dis_label[6803:12636], dis_label[13122:16038], dis_label[16524:18468], dis_label[18954:]))
-    dis_train_label = np.concatenate((dis_label[:6317], dis_label[6803:12636], dis_label[13122:16038], dis_label[16524:18468], dis_label[18954:]))
+    dis_test_label = np.concatenate((dis_label[:486], dis_label[6317:6803], dis_label[12636:13122], dis_label[16038:16524], dis_label[18468:18954]))
+    # dis_test_label = np.concatenate((dis_label[6317:6803], dis_label[12636:13122], dis_label[16038:16524], dis_label[18468:18954]))
+    dis_train_label = np.concatenate((dis_label[486:6317], dis_label[6803:12636], dis_label[13122:16038], dis_label[16524:18468], dis_label[18954:]))
+    # dis_train_label = np.concatenate((dis_label[:6317], dis_label[6803:12636], dis_label[13122:16038], dis_label[16524:18468], dis_label[18954:]))
     print(dis_test_label.shape, dis_train_label.shape)
     # print("radar_data_shape = " ,radar_data.shape, "label_data_shape = ", dis_label.shape)
     
     return radar_train_data, radar_test_data, dis_train_label, dis_test_label
 
 
-def fully_connected_layer(input1, input_channel, output_channel, name = "fc", activate = "leaky", is_training=False):
+def fully_connected_layer(input1, input_channel, output_channel, name = "fc"):
     
     with tf.variable_scope(name):
         w = tf.get_variable("Wf", shape=[input_channel, output_channel], initializer=tf.contrib.layers.xavier_initializer())
         b = tf.get_variable("B", shape = [output_channel], initializer=tf.contrib.layers.xavier_initializer())
-    
-    if activate == "leaky":
-        op = tf.nn.leaky_relu(tf.matmul(input1, w) + b)
-        op = tf.contrib.layers.batch_norm(op, is_training = is_training)
-    else:
-        op = tf.matmul(input1, w) + b
 
-    # op = tf.contrib.layers.batch_norm(op, is_training = is_training)
+    return tf.nn.leaky_relu(tf.matmul(input1, w) + b), (tf.matmul(input1, w) + b)
 
-    return op
-
-def conv2d_layer(input1, stride_nn, filter_size, input_channel, number_filter, name = "conv2" , activate = "leaky", is_training=False):
+def conv2d_layer(input1, stride_nn, filter_size, input_channel, number_filter, name = "conv2" ):
     
     with tf.variable_scope(name):
         w = tf.get_variable("W2d", shape = [filter_size, filter_size, input_channel, number_filter], initializer= tf.contrib.layers.xavier_initializer())
         b = tf.get_variable("B", shape = [number_filter], initializer = tf.contrib.layers.xavier_initializer())    
     conv2 = tf.nn.conv2d(input1, w, strides = [1, stride_nn, stride_nn, 1], padding="SAME")
-
-    if activate == "leaky":
-        op = tf.nn.leaky_relu(conv2 + b)
-        op = tf.contrib.layers.batch_norm(op, is_training=is_training)
-    else:
-        op = conv2 + b
-        # op = tf.layers.batch_normalization(op, training=training)
-    return op
+   
+    return tf.nn.leaky_relu(conv2 + b)
 
 def L2_loss(denseOut, dis_label):
 
@@ -86,15 +72,15 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
  
     # learning_rate = 0.01
     global_step = tf.Variable(0, trainable=False)
-    starter_learning_rate = 0.0098
+    starter_learning_rate = 0.01
     
     training_epoch = 10000
-    batch_size = 1500
-    log_dir = './summary_raw_data/summary_cnn_6_layers_batchnorm_complex_exp_2_reduce_test/2dcov2'
-    model_path = './saved_model/model_cnn_6_layers_batchnorm_complex_exp_2_reduce_test/4plot.ckpt'
-    # model_load = './saved_model/model_cnn_6_layers_batchnorm_complex_exp_1/4plot.ckpt'
+    batch_size = 18736
+    log_dir = './summary_raw_data/summary_cnn_6_layers_complex_6/2dcov2'
+    model_path = './saved_model/model_cnn_6_layers_complex_6/4plot.ckpt'
+    # model_load = './saved_model/model_cnn_6_layers_complex_1_2d/4plot.ckpt'
 
-    batch_test_size = 1944
+    batch_test_size = 2430
     batch_test_len = 0
 
     
@@ -103,35 +89,38 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
     training_phase = tf.placeholder(tf.bool, name = 'training_phase')
 
 
-    conv2d = conv2d_layer(x_p, 1, 3, 8, 4, "conv2_layer1_en", activate="leaky", is_training = False)
-    conv2d = conv2d_layer(conv2d, 2, 3, 4, 4, "conv2_layer2_en", activate="leaky", is_training = training_phase) 
+    conv2d = conv2d_layer(x_p, 1, 3, 8, 4, "conv2_layer1_en")
+    conv2d = conv2d_layer(conv2d, 2, 3, 4, 4, "conv2_layer2_en")
+    # conv2d = tf.contrib.layers.batch_norm(conv2d, is_training = training_phase) 
 
-    conv2d = conv2d_layer(conv2d, 1 , 3, 4, 8, "conv2_layer3_en", activate="leaky", is_training = False)
-    conv2d = conv2d_layer(conv2d, 2 , 3, 8, 8, "conv2_layer4_en", activate="leaky", is_training = training_phase)
+    conv2d = conv2d_layer(conv2d, 1 , 3, 4, 8, "conv2_layer3_en")
+    conv2d = conv2d_layer(conv2d, 2 , 3, 8, 8, "conv2_layer4_en")
+    # conv2d = tf.contrib.layers.batch_norm(conv2d, is_training = training_phase)
 
-    conv2d = conv2d_layer(conv2d, 1 , 3, 8, 16, "conv2_layer5_en", activate="leaky", is_training= False)
-    conv2d = conv2d_layer(conv2d, 2 , 3, 16, 16, "conv2_layer6_en", activate= "leaky", is_training= training_phase)
+    conv2d = conv2d_layer(conv2d, 1 , 3, 8, 16, "conv2_layer5_en")
+    conv2d = conv2d_layer(conv2d, 2 , 3, 16, 16, "conv2_layer6_en")
+    # conv2d = tf.contrib.layers.batch_norm(conv2d, is_training = training_phase)
 
     # conv1d = conv2d_layer(conv1d, 1 , 3, 32, 32, "conv1_layer7_en", "leaky")
     # conv1d = conv2d_layer(conv1d, 2 , 3, 32, 64, "conv1_layer8_en", "leaky")    
 
     flatten = tf.reshape(conv2d, [-1, 3*3*16 ])
 
-    dense1 = fully_connected_layer(flatten, 3*3*16, 200, "fc1", activate="leaky", is_training = training_phase)
-    denseOut = fully_connected_layer(dense1, 200, 3, "fc2", activate="None", is_training = False)
+    dense1, none = fully_connected_layer(flatten, 3*3*16, 200, "fc1")
+    # dense1 = tf.contrib.layers.batch_norm(dense1, is_training = training_phase)
+    none, denseOut  = fully_connected_layer(dense1, 200, 3, "fc2")
     # denseOut= fully_connected_layer(dense2, 200, 3, "fcOut", "None")
     loss, hist = L2_loss(denseOut, y_p)
 
 
-    learning_rate = tf.compat.v1.train.exponential_decay(starter_learning_rate, global_step, 12000, 0.96, staircase=True)
+    learning_rate = tf.compat.v1.train.exponential_decay(starter_learning_rate, global_step, 1200, 0.96, staircase=True)
 
     train_optimiser = tf.train.AdamOptimizer(learning_rate=learning_rate)
     
-    update_ops = tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)
-    # train_ops = tf.group([train_ops,update_ops])
+    # update_ops = tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)
     
-    with tf.control_dependencies(update_ops):
-        train_ops = train_optimiser.minimize(loss, global_step=global_step)
+    # with tf.control_dependencies(update_ops):
+    train_ops = train_optimiser.minimize(loss, global_step=global_step)
 
     hist_ops = tf.summary.histogram("histrogram_l2", hist)
 
@@ -162,7 +151,7 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
             total_batch = int(len(radar_train_data)/batch_size)
             
             for i in range(total_batch):
-                x,c = sess.run([train_ops, loss], feed_dict= {x_p : radar_train_data[batch_len:(batch_len+batch_size)], y_p: dis_train_label[batch_len:(batch_len+batch_size)], training_phase: True})
+                x,c  = sess.run([train_ops, loss], feed_dict= {x_p : radar_train_data[batch_len:(batch_len+batch_size)], y_p: dis_train_label[batch_len:(batch_len+batch_size)], training_phase: True})
                 batch_len += batch_size
                 avg_loss += c / total_batch
 
@@ -211,8 +200,12 @@ def main():
     radar_train_data, radar_test_data, dis_train_label, dis_test_label = pre_process()
     # plt.imshow(radar_train_data[0,:,:,0])
     # plt.show()
-    # radar_train_data = radar_train_data[:15000]
-    # dis_train_label = dis_train_label[:15000]
+    
+    # dis_test_label = dis_test_label[:,1:3]
+    # dis_train_label = dis_train_label[:,1:3]
+
+    # print(dis_test_label.shape, dis_train_label.shape)
+
     run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label)
 
 if __name__ == "__main__":
