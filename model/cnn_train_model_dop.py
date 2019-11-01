@@ -17,7 +17,7 @@ def pre_process():
     deletedCom = np.concatenate((deleted1,deleted2))
     
 
-    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_moving_real_imag.npy")
+    radar_data = np.load("D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_data_reduce/radar_data_reduce_all_real_imag.npy")
     print(radar_data.shape)
     radar_data = np.swapaxes(np.swapaxes(radar_data, 1,2),2,3)
     # radar_data = radar_data[:,:,0,:]
@@ -75,20 +75,28 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
     starter_learning_rate = 0.01
     
     training_epoch = 10000
-    batch_size = 18736
-    log_dir = './summary_moving_data/summary_cnn_6_layers_complex_moving_1/2dcov2'
-    model_path = './saved_model/model_cnn_6_layers_complex_moving_1/4plot.ckpt'
-    # model_load = './saved_model/model_cnn_6_layers_complex_1_2d/4plot.ckpt'
-
+    batch_train_size = 1500
     batch_test_size = 2430
     batch_test_len = 0
 
-    
-    x_p = tf.placeholder(tf.float32, shape=[None, 20, 20, 8], name= 'x_train')
-    y_p = tf.placeholder(tf.float32, shape=[None, 3], name= 'y_train')
+    log_dir = './summary_raw_data/summary_cnn_6_layers_complex_shuffle_1/2dcov2'
+    model_path = './saved_model/model_cnn_6_layers_complex_shuffle_1/4plot.ckpt'
+    # model_load = './saved_model/model_cnn_6_layers_complex_1_2d/4plot.ckpt'
+
     training_phase = tf.placeholder(tf.bool, name = 'training_phase')
 
+    train_data, train_label = tf.train.shuffle_batch([radar_train_data, dis_train_label], enqueue_many=True, batch_size=batch_train_size, 
+        capacity=3000, min_after_dequeue=500, allow_smaller_final_batch = True)
+    test_data, test_label = tf.train.batch([radar_test_data, dis_test_label], enqueue_many=True, batch_size=batch_test_size, 
+        capacity=batch_test_size, allow_smaller_final_batch=True)
 
+    x_p, y_p =  tf.cond(training_phase, lambda: (train_data, train_label) , lambda: (test_data, test_label))
+    # x_p = tf.placeholder(tf.float32, shape=[None, 20, 20, 8], name= 'x_train')
+    # y_p = tf.placeholder(tf.float32, shape=[None, 3], name= 'y_train')
+    x_p = tf.cast(x_p, dtype=tf.float32)
+    y_p = tf.cast(y_p, dtype=tf.float32)
+
+    print(x_p)
     conv2d = conv2d_layer(x_p, 1, 3, 8, 4, "conv2_layer1_en")
     conv2d = conv2d_layer(conv2d, 2, 3, 4, 4, "conv2_layer2_en")
     # conv2d = tf.contrib.layers.batch_norm(conv2d, is_training = training_phase) 
@@ -138,6 +146,9 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
         writer1 = tf.summary.FileWriter(log_dir+"/training")
         writer2 = tf.summary.FileWriter(log_dir+"/validation")
         
+        coord = tf.train.Coordinator()
+        threads = tf.train.start_queue_runners(coord=coord)
+
         '''
         restore model path
         '''
@@ -148,16 +159,15 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
         for epoch in range(training_epoch):
             avg_loss = 0
             batch_len = 0
-            total_batch = int(len(radar_train_data)/batch_size)
+            total_batch = int(len(radar_train_data)/batch_train_size)
             
             for i in range(total_batch):
-                x,c  = sess.run([train_ops, loss], feed_dict= {x_p : radar_train_data[batch_len:(batch_len+batch_size)], y_p: dis_train_label[batch_len:(batch_len+batch_size)], training_phase: True})
-                batch_len += batch_size
+                x,c  = sess.run([train_ops, loss], feed_dict={training_phase: True})
                 avg_loss += c / total_batch
 
 
             training_acc = avg_loss
-            test_acc, histrogram, lr = sess.run([loss, hist_ops, learning_rate], feed_dict = {x_p: radar_test_data[batch_test_len:(batch_test_len+batch_test_size)], y_p: dis_test_label[batch_test_len:(batch_test_len+batch_test_size)], training_phase: False})
+            test_acc, histrogram, lr = sess.run([loss, hist_ops, learning_rate], feed_dict = {training_phase: False})
             
             batch_test_len += batch_test_size
             if batch_test_len >= len(radar_test_data):
@@ -191,7 +201,9 @@ def run_graph(radar_train_data, radar_test_data, dis_train_label, dis_test_label
                 print("-----Save model----- epoch + 1")
                 save_path = saver.save(sess, model_path)
                 print("Model saved in file: %s" %save_path)
-
+        
+        coord.request_stop()
+        coord.join(threads)
 
     writer1.close()
     writer2.close()
