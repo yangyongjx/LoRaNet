@@ -7,4 +7,4 @@ High precision FMCW localization by using deep neural network
 
 -- Pos process floder contains reprojection code, TF test code.
 
--- Collecting data floder contains contains collecting file that has to use with mm-wave studio to collect the data
+-- Collecting data floder contains collecting file that has to use with mm-wave studio to collect the data
