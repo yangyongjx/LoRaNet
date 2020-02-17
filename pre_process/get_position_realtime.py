@@ -139,8 +139,8 @@ def Line():
     
 def cam_config():
     global cap, fps
-    # cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap = cv2.VideoCapture('D:/NestData/3tx-32chirp-jaco-55times_all/3tx-32chirp-jaco-55times_pos7/2020-01-16_15-54-53_Trim.mp4')
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    # cap = cv2.VideoCapture('D:/NestData/11-7-2019-64-chirp-16bit/2019-11-07_04-13-53.mp4')
     # cap = cv2.VideoCapture('D:/LogitectVideo/2019-10-05_03-59-14.mp4')
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -211,7 +211,7 @@ def draw_function(vec_1_pixel, vec_2_pixel, vec_3_pixel, vec_4_pixel, vec_21_mov
     # cv2.circle(frame, (vec_3_pixel[0], vec_3_pixel[1]), 3, (255,0,0), -1) 
 
     cv2.circle(frame, (vec_rad_0_pixel[0], vec_rad_0_pixel[1]), 5, (0,0,255), -1)
-    # cv2.circle(frame, (vec_rad_1_pixel[0], vec_rad_1_pixel[1]), 5, (255,0,0), -1) 
+    cv2.circle(frame, (vec_rad_1_pixel[0], vec_rad_1_pixel[1]), 5, (255,0,0), -1) 
     # cv2.circle(frame, (vec_rad_2_pixel[0], vec_rad_2_pixel[1]), 5, (0,0,255), -1)  
     
     cv2.circle(frame, (rt_pixel[0], rt_pixel[1]), 5, (0,0,255), -1)
@@ -363,7 +363,7 @@ def vec_camera_coordinate(rvec, tvec, object_point, u, v):
     # print("1", rt_matrix_1, "2", rt_matrix_2, "3", r_matrix)
     
    
-    return vec_1_pixel, vec_2_pixel, vec_3_pixel, vec_4_pixel, vec_21_mov_pixel, rt_pixel, rt_matrix_inv_1, rt_matrix_inv_2, vec_0_pixel, r_matrix, t_matrix, rt
+    return vec_1_pixel, vec_2_pixel, vec_3_pixel, vec_4_pixel, vec_21_mov_pixel, rt_pixel, rt_matrix_inv_1, rt_matrix_inv_2, vec_0_pixel, r_matrix
  
 def vec_radar_coordinate(corner_point_radar):
 
@@ -459,8 +459,8 @@ def findObject(avg_frame, pixel_aruco_30):
             x1,y1,w1,h1 = cv2.boundingRect(c1)
             # print(x1,y1)
             # cv2.circle(frame, (x1,y1), 5, (0,0,255), -1)
-            # cv2.imshow('median', threshold)
-            # cv2.imshow('avg', median_avg_cell)
+            cv2.imshow('median', threshold)
+            cv2.imshow('avg', median_avg_cell)
             
             param_x = x1 + px
             param_y = y1 + py
@@ -476,13 +476,12 @@ def findObject(avg_frame, pixel_aruco_30):
         
     return param_x,param_y
 
-def frameTrigger():
+# def frameTrigger():
 
-    frame_green = frame[700, 25, 1]
-    # print(frame_green)
-    frame_green = frame_green > 128
-  
-    return frame_green
+#     frame_green = frame[25, 1125, 1]
+#     frame_green = frame_green > 50
+
+#     return frame_green
     
 
 
@@ -496,9 +495,9 @@ def cam_run():
     '''
         save stat
     '''
-    # text_file = open('D:/NestData/3tx-32chirp-jaco-55times_pos9/pos_process_label/frame_number.txt', 'w')
-    # rt_text_file = open('D:/NestData/3tx-32chirp-jaco-55times_pos9/pos_process_label/rt_matrix.txt', 'w')
-    # all_frame_detect = open('D:/NestData/3tx-32chirp-jaco-55times_pos9/pos_process_label/all_frame.txt', 'w')
+    # text_file = open('D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/frame_number.txt', 'w')
+    # rt_text_file = open('D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/rt_matrix.txt', 'w')
+    # all_frame_detect = open('D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/all_frame.txt', 'w')
     '''
         pygame and opengl function
     '''
@@ -546,10 +545,9 @@ def cam_run():
         '''
             green frame trigger
         '''
-      
-        frame_trigger = frameTrigger()
-        # frame_trigger = False
-        
+        # frame_trigger = frameTrigger()
+        frame_trigger = True
+
         # if frame_trigger:
 
         if ids.any() and frame_trigger:
@@ -589,10 +587,10 @@ def cam_run():
                     # stage_flag = False
 
                
-                param_x, param_y = findObject(avg_frame, image_point[2]) 
+                # param_x, param_y = findObject(avg_frame, image_point[2]) 
                 
                 vec_1_pixel, vec_2_pixel, vec_3_pixel, vec_4_pixel, vec_21_mov_pixel, rt_pixel, rt_matrix_inv_1, rt_matrix_inv_2, \
-                vec_0_pixel, r_matrix, t_matrix, rt = vec_camera_coordinate(rvec, tvec, object_point, param_x, param_y)
+                vec_0_pixel, r_matrix = vec_camera_coordinate(rvec, tvec, object_point, 0, 0)
                
                 '''
                     solvepnp and calculate vector of radar plane
@@ -600,12 +598,12 @@ def cam_run():
                 vec_rad_1_pixel, vec_rad_2_pixel, vec_rad_0_pixel, r_rad_matrix, t_rad_matrix, rt_rad_matrix_inv_1, rt_rad_matrix_inv_2 = vec_radar_coordinate(np.swapaxes(corners[point_compare[0,4]], 0,1))
                 draw_function(vec_1_pixel, vec_2_pixel, vec_3_pixel, vec_4_pixel, vec_21_mov_pixel, vec_rad_1_pixel, vec_rad_2_pixel, rt_pixel, vec_rad_0_pixel, vec_0_pixel)
                 
-                frame_limit += 1
-                print('frame_limit', frame_limit)
-                if (param_x != 0.2) and (param_y != 0.2) and (frame_limit <= 500):
-                    ballRadPosition(rt, rt_rad_matrix_inv_1, rt_rad_matrix_inv_2, param_x, param_y)
-                    frame_count += 1
-                    print('frame_collect = ', frame_count)
+                # frame_limit += 1
+                # print('frame_limit', frame_limit)
+                # if (param_x != 0.2) and (param_y != 0.2) and (frame_limit <= 500):
+                #     ballRadPosition(rt, rt_rad_matrix_inv_1, rt_rad_matrix_inv_2, param_x, param_y)
+                #     frame_count += 1
+                #     print('frame_collect = ', frame_count)
                     
 
                 '''
@@ -638,25 +636,24 @@ def cam_run():
             #     all_frame_detect.write(str(frame_limit) + '\n')
             #     rt_text_file.write(str(r_rad_matrix))
             #     rt_text_file.write(str(t_rad_matrix) + '\n')
-            #     np.save("D:/NestData/3tx-32chirp-jaco-55times_pos9/pos_process_label/radar_pos_label",np.array(frame_radar))
+            #     np.save("D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/radar_pos_label",np.array(frame_radar))
             #     print('wake text')
             #     print(np.array(frame_radar).shape)
 
-            ########################################################  
             avg_frame = collections.deque(maxlen=20)    
             frame_count = 0
             frame_limit = 0
-           
             
+            ########################################################  
 
         ret, frame = cap.read()
-        
+
 
         pygame.display.flip()
 
-    text_file.close()
-    rt_text_file.close()
-    all_frame_detect.close()
+    # text_file.close()
+    # rt_text_file.close()
+    # all_frame_detect.close()
 
 def main():
 

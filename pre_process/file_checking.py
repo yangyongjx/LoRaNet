@@ -1,4 +1,5 @@
 #%%
+
 import glob
 import numpy as np
 # images = glob.glob('D:/NestData/9-24-2019-single-chirp-16bit/*.bin')
@@ -14,7 +15,7 @@ import numpy as np
 #         print(int(i))
 
 #%%
-test = np.load('D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_pos_label_37-59.npy')
+test = np.load('D:/NestData/3tx-32chirp-jaco-55times_all/3tx-32chirp-jaco-55times_pos1/pos_process_label/radar_pos_label.npy')
 # test = test[:11664]
 print(np.where(test == 0)[0])
 count = []
@@ -26,7 +27,8 @@ for i in range(test.shape[0]):
 test = np.delete(test, count, axis=0)
 print(np.where(test == 0)[0])
 print(test.shape)
-np.save('D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/radar_pos_label_37-59_deleted.npy',test)
-np.save('D:/NestData/10-5-2019-64-chirp-16bit/pos_process_new/deleted_index_37-59.npy',np.array(count))
+# np.save('D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/radar_pos_label_deleted.npy',test)
+# np.save('D:/NestData/11-7-2019-64-chirp-16bit/pos_process_new/deleted_index.npy',np.array(count))
 print(np.array(count).shape)
-#%%
+
+
