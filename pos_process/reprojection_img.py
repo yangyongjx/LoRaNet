@@ -6,14 +6,14 @@ import pyqtgraph.opengl as gl
 import numpy as np
 from time import sleep
 
-dis_test_label = np.load("C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/test_data/dis_test_data_complex_exp_5.npy")
-dis_predict = np.load('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_5.npy')
+dis_test_label = np.load("D:/PythonFile/NestProject/Nest_Model/pos_process/test_data/dis_test_data_complex_exp_shuffle_3.npy")
+dis_test_predict = np.load('D:/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_shuffle_3.npy')
 
-dis_train_label = np.load("C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/test_data/dis_test_data_complex_exp_6(train).npy")
-dis_train_predict = np.load('C:/Users/nakorn-vision/Documents/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_6(train).npy')
+dis_train_label = np.load("D:/NestData/3tx-32chirp-jaco-55times_all/data_usage/radar_pos_label_deleted.npy")
+dis_train_predict = np.load('D:/PythonFile/NestProject/Nest_Model/pos_process/prediction_data/predict_data_complex_exp_shuffle_4(train).npy')
 
 # dis_label = np.concatenate((label1, label2))
-print(dis_test_label.shape, dis_predict.shape)
+print(dis_train_label.shape, dis_test_predict.shape)
 
 app = QtGui.QApplication([])
 w = gl.GLViewWidget()
@@ -24,47 +24,49 @@ w.addItem(g)
 colors_1 = [1.0,0,0,0.5]
 colors_2 = [0,1.0,0,0.5]
 
+# dis_test_predict = dis_test_predict[:,0,:]
+
 dis_test_label = dis_test_label/100
-dis_predict = dis_predict/100
+dis_test_predict = dis_test_predict/100
 dis_train_label = dis_train_label/100
 dis_train_predict = dis_train_predict/100
+dis_train_label = dis_train_label[:500]
+
 
 # dis_test_label = dis_test_label[:,1:3]
 # dis_predict = dis_predict[:,1:3]
 # print(dis_test_label.shape)
 
-
-
 # sp0 = gl.GLScatterPlotItem(pos=dis_test_label[:], color=colors_1)
 # w.addItem(sp0)
 
-# sp1 = gl.GLScatterPlotItem(pos=dis_predict[:])
+# sp1 = gl.GLScatterPlotItem(pos=dis_test_predict[:])
 # w.addItem(sp1)
 
-# sp2 = gl.GLScatterPlotItem(pos=dis_train_label[:], color=colors_2)
-# w.addItem(sp2)
+sp2 = gl.GLScatterPlotItem(pos=dis_train_label[:], color=colors_2)
+w.addItem(sp2)
 
 # sp3 = gl.GLScatterPlotItem(pos=dis_train_predict[:])
 # w.addItem(sp3)
 
 
-i = 0
-def update():
+# i = 0
+# def update():
     
-    global i 
+#     global i 
 
-    sp2 = gl.GLScatterPlotItem(pos=dis_test_label[i], color=colors_1)
-    w.addItem(sp2)
+#     sp2 = gl.GLScatterPlotItem(pos=dis_train_label[i], color=colors_1)
+#     w.addItem(sp2)
 
 
-    sp3 = gl.GLScatterPlotItem(pos=dis_predict[i])
-    w.addItem(sp3)
+#     # sp3 = gl.GLScatterPlotItem(pos=dis_test_predict[i])
+#     # w.addItem(sp3)
+#     print(i)
+#     i += 1
 
-    i += 2
-
-time = QtCore.QTimer()
-time.timeout.connect(update)
-time.start(5)
+# time = QtCore.QTimer()
+# time.timeout.connect(update)
+# time.start(5)
 
 
 if __name__ == '__main__':
