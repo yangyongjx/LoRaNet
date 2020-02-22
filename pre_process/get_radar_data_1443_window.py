@@ -274,6 +274,15 @@ def label_knn(file):
     dis_deleted = np.array(dis_deleted)
     deleted_index = np.array(deleted_index)
     # print(dis_deleted)
+    # dis_train = np.delete(dis_train, deleted_index, axis=0)
+    # print(dis_train.shape)
+    # print(dis_train[400])
+    # subf = 'D:/NestData/3tx-32chirp-jaco-55times_all/data_usage_3/label/label_processed_' + str(file_number)
+    # subd = 'D:/NestData/3tx-32chirp-jaco-55times_all/data_usage_3/label/label_deleted_index_' + str(file_number)
+    # np.save(subf, dis_train)
+    # np.save(subd, deleted_index)
+    print(file_number)
+    file_number += 1
 
     return dis_train, deleted_index
     
@@ -281,15 +290,16 @@ def label_knn(file):
 
 def main():
 
-    global IQall, range_fft, range_doppler
+    global IQall, range_fft, file_number, range_doppler
 
     name_count = 0
+    file_number = 1
     range_doppler_list = []
     range_fft_list = []
     signal_modulation_am = []
 
-    folder_name = glob.glob('/data/3tx-32chirp-jaco-55times_all/3tx-32chirp-jaco-55times_pos*')
-    folder_label_name = glob.glob('/data/3tx-32chirp-jaco-55times_all/label_data/data_usage_3/label_no_process/*')
+    folder_name = glob.glob('D:/NestData/3tx-32chirp-jaco-55times_all/3tx-32chirp-jaco-55times_pos*')
+    folder_label_name = glob.glob('D:/NestData/3tx-32chirp-jaco-55times_all/data_usage_3/label_no_process/*')
     folder_label_name.sort(key=lambda f: int(re.sub('\D','',f)))
     folder_name.sort(key=lambda f: int(re.sub('\D','',f)))
 
@@ -307,36 +317,49 @@ def main():
             print("radar =", ss,"----------- radar =", folder_label_name[name_count])
             dis_train, deleted_index = label_knn(folder_label_name[name_count])
             IQall = callBinfile(ss)
-            IQall = IQall[19:,:,:,:]
-            print("IQ all shape", IQall.shape)
 
-            # ----------- check zero in IQ -------------
+
+            
             for iq in IQall:
                 check_zero = np.count_nonzero(iq)
                 if check_zero < 380000:
                     radar_zero.append(count_zero_index)
                 count_zero_index += 1 
             radar_zero = np.array(radar_zero)
-            # ==========================================
-            # ------------- concat zero and outlier of position ----------------
             radar_label_zero_index = np.concatenate((radar_zero, deleted_index))
-            # ------------------------------------------------------
             _, ix = np.unique(radar_label_zero_index, return_index=True)
-            radar_labe_zero_index = radar_label_zero_index[np.sort(ix)]
             print(radar_zero, deleted_index)
-            print(radar_label_zero_index)
-           
-            dis_train = np.delete(dis_train, radar_label_zero_index, axis=0)
-            IQall = np.delete(IQall, radar_label_zero_index, axis=0)
-            print(dis_train.shape, IQall.shape)
-            print(dis_train[0], IQall[0,0,0,0])
+            print(radar_label_zero_index[np.sort(ix)])
+            plt.imshow(np.float32(IQall[89,:,:,0]))
+            plt.show()
             name_count += 1
-            
-            subf = '/data/radar_461_position_data/radar_data/radar_pos_' + str(name_count)
-            subd = '/data/radar_461_position_data/label/label_pos_' + str(name_count)
-            np.save(subf, IQall)
-            np.save(subd, dis_train)
-            
+             
+            # print(IQall)
+            # range_fft = fft_range_function()
+            # range_fft = range_fft[:,:,:32,:]
+            # print(range_fft.shape, "check", range_fft[0,0,0,0])
+            # range_fft_real = np.float16(range_fft.real)
+            # range_fft_imag = np.float16(range_fft.imag)
+            # range_fft_all = np.concatenate((range_fft_real, range_fft_imag), axis= 3)
+            # print(range_fft_all.shape, "check", range_fft_all[0,0,0,0], range_fft_all[0,0,0,12])
+            # range_fft = abs(range_fft)
+            # background_average()
+            # signal_modulation_am.append(range_fft) 
+            # range_fft = movingAvg_OneD()
+            # range_doppler = fftVelocity()
+            # # range_doppler = range_doppler[:,:,:32,:]
+            # range_doppler_real = np.float16(range_doppler.real)
+            # range_doppler_imag = np.float16(range_doppler.imag)
+            # range_doppler_all = np.concatenate((range_doppler_real, range_doppler_imag), axis= 3)
+            # print(range_doppler_all.shape)
+            # print("check", range_doppler_real[0,0,0,0], range_doppler_imag[0,0,0,0])
+            # range_doppler_list.extend(range_doppler_all)
+            # range_fft_list.extend(range_fft_all)
+            # # print(range_doppler_all[0,0,:,10])
+            # # print(range_doppler_real[0,0,:,0])
+            # # print(range_doppler_imag[0,0,:,0])
+            # # print(range_doppler_real[0,0,0,0], range_doppler_real_r[0,0,0,0])
+            # print(np.array(range_doppler_list).shape)
             # runGraphInitial()
         # print(name_count)
     
